@@ -78,7 +78,9 @@ resource "aws_iam_role" "github_actions_ci" {
 
   name = "${local.cluster_name}-github-actions-ci-role"
   description = "GitHub Actions CI role for ECR image push"
+  # 앞서 만든 신뢰정책(인증서 발급처 신뢰, 특정소유주의 저장소/브런치만 작동)을 본 IAM Role에 연결
   assume_role_policy = data.aws_iam_policy_document.github_actions_ci_assume[0].json
+  # 최대시간 role이 유지되는 3600초 => 1시간
   max_session_duration = 3600
   depends_on = [aws_iam_openid_connect_provider.github_actions]
 }
