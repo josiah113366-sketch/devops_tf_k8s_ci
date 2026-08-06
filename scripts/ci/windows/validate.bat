@@ -47,7 +47,7 @@ if errorlevel 1 goto :error
 
 docker run --detach --name "%WEB_CONTAINER%" --add-host was-service:127.0.0.1 --publish 18080:80 "%WEB_IMAGE%" >nul
 if errorlevel 1 goto :error
-call :wait_for_url "http://127.0.0.1:18080/health" "WEB"
+call :wait_for_url "http://127.0.0.1:80/health" "WEB"
 if errorlevel 1 goto :error
 
 echo [7/7] Build and health-check WAS image
@@ -56,7 +56,7 @@ if errorlevel 1 goto :error
 
 docker run --detach --name "%WAS_CONTAINER%" --publish 18000:8000 "%WAS_IMAGE%" >nul
 if errorlevel 1 goto :error
-call :wait_for_url "http://127.0.0.1:18000/health" "WAS"
+call :wait_for_url "http://127.0.0.1:8080/health" "WAS"
 if errorlevel 1 goto :error
 
 call :cleanup
