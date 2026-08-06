@@ -21,11 +21,16 @@ locals {
   github_actions_ci_subject = "repo:${var.github_owner}@${var.github_owner_id}/${var.github_ci_repository}@${var.github_ci_repository_id}:ref:refs/heads/${var.github_ci_branch}"
 }
 
+# ─────────────────────────────────────────────
+# oidc PROVIDER 생성. IAM Role을 이용하여 Github action을 사용하도록 신뢰연결
+# ─────────────────────────────────────────────
+# GitHub oidc PROVIDER 생성
 resource "aws_iam_openid_connect_provider" "github_actions" {
   count = var.enable_github_actions_ci && var.create_github_oidc_provider ? 1 : 0
 
-  url = "https://token.actions.githubusercontent.com"
-  client_id_list = ["sts.amazonaws.com"]
+  url = "https://token.actions.githubusercontent.com" # 발급처 주소
+  # sts : IAM Role의 임시 자격 증명 발급 서비스명
+  client_id_list = ["sts.amazonaws.com"] # aws sts 사용 목적으로 발급한다 
 
   tags = {
     Name = "github-actions-oidc"
@@ -35,20 +40,27 @@ resource "aws_iam_openid_connect_provider" "github_actions" {
 data "aws_iam_policy_document" "github_actions_ci_assume" {
   count = var.enable_github_actions_ci ? 1 : 0
 
+  # IAM에 정책을 하나 허용하겟다~ 
   statement {
+    # 정책을 구분하는 이름 
     sid = "GitHubActionsAssumeRole"
+    # 허가
     effect = "Allow"
+    #  IAM Role의 임시 자격 증명 발급 서비스명
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
+    # AWS서비스가 아니라 외부 인증기관을 신뢰
     principals {
       type = "Federated"
       identifiers = [local.github_actions_oidc_provider_arn]
     }
+    # 조건 : 다른 서비스용 토큰 발급 거부
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:aud"
       values   = ["sts.amazonaws.com"]
     }
+    # 조건 : 다른 저장소, 다른 브런치 Role 사용 x
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
@@ -58,6 +70,9 @@ data "aws_iam_policy_document" "github_actions_ci_assume" {
 }
 
 
+# ─────────────────────────────────────────────
+# ECR 권한 정책 반영 절차 -> 유효시간 1시간, 해당 IAM Role이 push 가동하도록(신뢰 정책 반영)
+# ─────────────────────────────────────────────
 resource "aws_iam_role" "github_actions_ci" {
   count = var.enable_github_actions_ci ? 1 : 0
 
