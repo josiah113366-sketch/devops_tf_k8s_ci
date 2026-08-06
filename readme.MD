@@ -121,4 +121,10 @@
 
     # ID 조회
     gh api repos/josiah113366-sketch/devops_tf_k8s_ci --jq "{owner_id: .owner.id, repository_id: .id, created_at: .created_at}"
+    ---
+    {
+      "created_at": "2026-08-06T00:22:07Z",
+      "owner_id": 307806325,
+      "repository_id": 1324585130
+    }
     ```

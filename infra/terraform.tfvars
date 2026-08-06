@@ -23,5 +23,5 @@ github_ci_branch         = "main"                      # 어떤 브랜치에서�
 # 최초라면 true, 만약 1번 이상 수행 -> aws 내 iam 본인 계정에 등록되어 있다면 false로 설정
 create_github_oidc_provider = true
 # 조회 발급 -> 추후 세팅 -> git 로그인 처리 후 조회 -> 모두 숫자임
-github_owner_id         = ""
-github_ci_repository_id = ""
+github_owner_id         = "307806325"
+github_ci_repository_id = "1324585130"
