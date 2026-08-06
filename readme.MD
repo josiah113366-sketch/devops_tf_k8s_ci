@@ -96,3 +96,15 @@
 - 수정 및 추가 작업
   - infra/ 내 수정 및 추가 작업
     - terraform.tfvars
+  - git 관련 id 조회 
+     ```
+      # github_owner_id, github_ci_repository_id 값 획득
+      # gh 명령어 사용
+      # 윈도우
+        # 설치
+        winget install --id GitHub.cli
+
+      # 맥
+        # 설치
+        brew install gh
+    ```
