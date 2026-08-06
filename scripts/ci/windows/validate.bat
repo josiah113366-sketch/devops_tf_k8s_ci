@@ -45,7 +45,7 @@ echo [6/7] Build and health-check WEB image
 docker build --platform linux/amd64 --tag "%WEB_IMAGE%" "%ROOT_DIR%\apps\web"
 if errorlevel 1 goto :error
 
-docker run --detach --name "%WEB_CONTAINER%" --add-host was-service:127.0.0.1 --publish 18080:80 "%WEB_IMAGE%" >nul
+docker run --detach --name "%WEB_CONTAINER%" --add-host was:127.0.0.1 --publish 18080:80 "%WEB_IMAGE%" >nul
 if errorlevel 1 goto :error
 call :wait_for_url "http://127.0.0.1:18080/health" "WEB"
 if errorlevel 1 goto :error

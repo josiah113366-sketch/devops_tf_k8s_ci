@@ -58,7 +58,7 @@ python3 -m py_compile "${ROOT_DIR}/apps/was/app.py"
 
 echo "[6/7] WEB 이미지 빌드 및 상태 확인"
 docker build --platform linux/amd64 --tag "${WEB_IMAGE}" "${ROOT_DIR}/apps/web"
-docker run --detach --name "${WEB_CONTAINER}" --add-host was-service:127.0.0.1 --publish 18080:80 "${WEB_IMAGE}" >/dev/null
+docker run --detach --name "${WEB_CONTAINER}" --add-host was:127.0.0.1 --publish 18080:80 "${WEB_IMAGE}" >/dev/null
 wait_for_url "http://127.0.0.1:18000/health" "WEB"
 
 echo "[7/7] WAS 이미지 빌드 및 상태 확인"
