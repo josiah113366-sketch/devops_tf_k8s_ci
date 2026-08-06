@@ -88,36 +88,46 @@ resource "aws_iam_role" "github_actions_ci" {
 data "aws_iam_policy_document" "github_actions_ci" {
   count = var.enable_github_actions_ci ? 1 : 0
 
+  # 해당 OIDC 인증서(토큰), repo등 정보가 일치하는 유저의 ECRLogin 허가
+  # ECR 로그인 허용 정책
   statement {
     sid    = "ECRLogin"
     effect = "Allow"
+    # 도커가 ecr 로그인하는 토큰을 받은다
     actions = ["ecr:GetAuthorizationToken"]
+    # ECR 제한 없음
     resources = ["*"]
   }
 
+  # WEB/WAS 이미지 Push 권한 정책 허가
   statement {
     sid    = "PushApplicationImages"
     effect = "Allow"
     actions = [
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:BatchGetImage",
-      "ecr:CompleteLayerUpload",
-      "ecr:DescribeImages",
-      "ecr:GetDownloadUrlForLayer",
-      "ecr:InitiateLayerUpload",
-      "ecr:PutImage",
-      "ecr:UploadLayerPart"
+      "ecr:BatchCheckLayerAvailability",   # 동일  이미지 레이어가 이미 있는지 체크
+      "ecr:BatchGetImage",                 # 기존 이미지 조회
+      "ecr:CompleteLayerUpload",           # 이미지 업로드 완료
+      "ecr:DescribeImages",                # 등록된 이미지, 태그 조회
+      "ecr:GetDownloadUrlForLayer",        # 이미지 다운로드 주소 조회
+      "ecr:InitiateLayerUpload",           # 이미지 업로드 시작
+      "ecr:PutImage",                      # 이미지 매니페스트, 테그 등록
+      "ecr:UploadLayerPart"                # 이미지 부분 단위로 업로드
     ]
+    # 위의 권한이 허가되는 이미지를 web, was용으로 제한
     resources = [
-      aws_ecr_repository.web.arn,
-      aws_ecr_repository.was.arn
+      aws_ecr_repository.web.arn,          # web arn
+      aws_ecr_repository.was.arn           # was arn
     ]
   }
 }
 
+# IAM Role에 ECR 정책 추가 연결
 resource "aws_iam_role_policy" "github_actions_ci" {
   count = var.enable_github_actions_ci ? 1 : 0
+  # 정책명
   name = "${local.cluster_name}-ecr-push-policy"
+  # IAM Role
   role = aws_iam_role.github_actions_ci[0].id
+  # 추가될 정책(ECR)
   policy = data.aws_iam_policy_document.github_actions_ci[0].json
 }
