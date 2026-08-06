@@ -27,3 +27,42 @@
 ```
 
 - devops_tf_k8s_ci는 CI/CD 구성에서 `CI 영역만 담당하는 소스 저장소(source repository)`임
+
+# 프로젝트 구조
+```text
+        tf-k8s-ci/
+        ├─ setup-ci.bat             # 신규 1회 수행 : Windows CI 전체 최초 설정
+        ├─ setup-ci.sh              # 신규 1회 수행 : macOS/Linux/WSL CI 전체 최초 설정
+        ├─ validate-ci.bat          # 신규 수시 수행 : Windows 로컬 CI 재검증 
+        ├─ validate-ci.sh           # 신규 수시 수행 : macOS/Linux/WSL 로컬 CI 재검증
+        ├─ project.bat              # 신규 인프라/쿠버네티스 구성시/변경되면 수행 : Windows 전체 명령 진입점
+        ├─ project.sh               # 신규 인프라/쿠버네티스 구성시/변경되면 수행 : macOS/Linux/WSL 전체 명령 진입점
+        ├─ .github/                 # 신규
+        │  ├─ workflows/ci.yml      # 신규 GitHub Actions CI Workflow
+        │  └─ dependabot.yml        # 신규 GitHub Actions 버전 점검
+        ├─ apps/
+        │  ├─ web/                  # Nginx 소스와 Dockerfile
+        │  └─ was/                  # FastAPI 소스와 Dockerfile
+        ├─ infra/
+        │  ├─ github-actions-ci.tf  # 신규 GitHub OIDC, CI IAM Role, ECR Push 정책
+        │  ├─ variables.tf          # 수정 CI 입력변수 추가 (OIDC, Git Action, Github 관련)
+        │  ├─ outputs.tf            # GitHub Actions Role ARN 출력 추가
+        │  └─ ...                   # 기존 인프라 구성 파일 동일
+        ├─ scripts/
+        │  ├─ ci/
+        │  │  ├─ verify_ci_config.py # CI 파일과 terraform.tfvars 사전 검사
+        │  │  ├─ linux/             # macOS/Linux/WSL CI 실행 로직
+        │  │  └─ windows/           # Windows CMD CI 실행 로직
+        │  ├─ deploy/               # 최초 수동 배포가 필요할 때 사용하는 로직
+        │  ├─ ops/                  # 상태 확인과 전체 삭제
+        │  └─ setup/                # 실습 환경 설치
+        ├─ tools/
+        └─ docs/
+```
+
+- 전체 저장소 배치
+```
+  devops_tf_k8s/
+  L devops_tf_k8s_ci
+  L devops_tf_k8s_cd
+```
