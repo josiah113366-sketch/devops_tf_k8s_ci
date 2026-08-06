@@ -169,122 +169,122 @@ jobs:
             echo "- Moving tag: \`${{ steps.image.outputs.latest_image }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
   
-  # update-cd:
-  #   name: Update tf-k8s-cd image tags
-  #   needs: build-and-push
+  update-cd:
+    name: Update tf-k8s-cd image tags
+    needs: build-and-push
 
-  #   if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request'
 
-  #   runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-  #   permissions:
-  #     contents: read
-  #     id-token: write
+    permissions:
+      contents: read
+      id-token: write
 
-  #   steps:
-  #     - name: Check CD settings
-  #       env:
-  #         CD_REPOSITORY: ${{ vars.CD_REPOSITORY }}
-  #         CD_REPOSITORY_TOKEN: ${{ secrets.CD_REPOSITORY_TOKEN }}
-  #         AWS_REGION: ${{ vars.AWS_REGION }}
-  #         AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
-  #         ECR_WEB_REPOSITORY: ${{ vars.ECR_WEB_REPOSITORY }}
-  #         ECR_WAS_REPOSITORY: ${{ vars.ECR_WAS_REPOSITORY }}
-  #       run: |
-  #         set -euo pipefail
+    steps:
+      - name: Check CD settings
+        env:
+          CD_REPOSITORY: ${{ vars.CD_REPOSITORY }}
+          CD_REPOSITORY_TOKEN: ${{ secrets.CD_REPOSITORY_TOKEN }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+          ECR_WEB_REPOSITORY: ${{ vars.ECR_WEB_REPOSITORY }}
+          ECR_WAS_REPOSITORY: ${{ vars.ECR_WAS_REPOSITORY }}
+        run: |
+          set -euo pipefail
 
-  #         for variable_name in \
-  #           CD_REPOSITORY \
-  #           CD_REPOSITORY_TOKEN \
-  #           AWS_REGION \
-  #           AWS_ROLE_ARN \
-  #           ECR_WEB_REPOSITORY \
-  #           ECR_WAS_REPOSITORY
-  #         do
-  #           if [ -z "${!variable_name:-}" ]; then
-  #             echo "[ERROR] CD 연결 설정이 없습니다: ${variable_name}" >&2
-  #             exit 1
-  #           fi
-  #         done
+          for variable_name in \
+            CD_REPOSITORY \
+            CD_REPOSITORY_TOKEN \
+            AWS_REGION \
+            AWS_ROLE_ARN \
+            ECR_WEB_REPOSITORY \
+            ECR_WAS_REPOSITORY
+          do
+            if [ -z "${!variable_name:-}" ]; then
+              echo "[ERROR] CD 연결 설정이 없습니다: ${variable_name}" >&2
+              exit 1
+            fi
+          done
 
-  #     - name: Configure temporary AWS credentials with OIDC
-  #       uses: aws-actions/configure-aws-credentials@v5
-  #       with:
-  #         role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-  #         role-session-name: tf-k8s-ci-${{ github.run_id }}-update-cd
-  #         aws-region: ${{ vars.AWS_REGION }}
+      - name: Configure temporary AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          role-session-name: tf-k8s-ci-${{ github.run_id }}-update-cd
+          aws-region: ${{ vars.AWS_REGION }}
 
-  #     - name: Checkout tf-k8s-cd
-  #       uses: actions/checkout@v7
-  #       with:
-  #         repository: ${{ vars.CD_REPOSITORY }}
-  #         token: ${{ secrets.CD_REPOSITORY_TOKEN }}
-  #         ref: main
-  #         path: tf-k8s-cd
+      - name: Checkout tf-k8s-cd
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ vars.CD_REPOSITORY }}
+          token: ${{ secrets.CD_REPOSITORY_TOKEN }}
+          ref: main
+          path: tf-k8s-cd
 
-  #     - name: Install Kustomize
-  #       env:
-  #         KUSTOMIZE_VERSION: v5.8.1
-  #       run: |
-  #         set -euo pipefail
+      - name: Install Kustomize
+        env:
+          KUSTOMIZE_VERSION: v5.8.1
+        run: |
+          set -euo pipefail
 
-  #         curl -fsSL \
-  #           "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" \
-  #           -o /tmp/kustomize.tar.gz
+          curl -fsSL \
+            "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${KUSTOMIZE_VERSION}/kustomize_${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" \
+            -o /tmp/kustomize.tar.gz
 
-  #         tar -xzf /tmp/kustomize.tar.gz -C /tmp
-  #         sudo install -m 0755 /tmp/kustomize /usr/local/bin/kustomize
-  #         kustomize version
+          tar -xzf /tmp/kustomize.tar.gz -C /tmp
+          sudo install -m 0755 /tmp/kustomize /usr/local/bin/kustomize
+          kustomize version
 
-  #     - name: Update immutable image tags
-  #       env:
-  #         AWS_REGION: ${{ vars.AWS_REGION }}
-  #         ECR_WEB_REPOSITORY: ${{ vars.ECR_WEB_REPOSITORY }}
-  #         ECR_WAS_REPOSITORY: ${{ vars.ECR_WAS_REPOSITORY }}
-  #       run: |
-  #         set -euo pipefail
+      - name: Update immutable image tags
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          ECR_WEB_REPOSITORY: ${{ vars.ECR_WEB_REPOSITORY }}
+          ECR_WAS_REPOSITORY: ${{ vars.ECR_WAS_REPOSITORY }}
+        run: |
+          set -euo pipefail
 
-  #         IMAGE_TAG="${GITHUB_SHA::12}"
-  #         AWS_ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
-  #         ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+          IMAGE_TAG="${GITHUB_SHA::12}"
+          AWS_ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
+          ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
-  #         WEB_IMAGE="${ECR_REGISTRY}/${ECR_WEB_REPOSITORY}"
-  #         WAS_IMAGE="${ECR_REGISTRY}/${ECR_WAS_REPOSITORY}"
+          WEB_IMAGE="${ECR_REGISTRY}/${ECR_WEB_REPOSITORY}"
+          WAS_IMAGE="${ECR_REGISTRY}/${ECR_WAS_REPOSITORY}"
 
-  #         cd tf-k8s-cd/k8s/overlays/dev
+          cd tf-k8s-cd/k8s/overlays/dev
 
-  #         kustomize edit set image \
-  #           "WEB_IMAGE=${WEB_IMAGE}:${IMAGE_TAG}" \
-  #           "WAS_IMAGE=${WAS_IMAGE}:${IMAGE_TAG}"
+          kustomize edit set image \
+            "WEB_IMAGE=${WEB_IMAGE}:${IMAGE_TAG}" \
+            "WAS_IMAGE=${WAS_IMAGE}:${IMAGE_TAG}"
 
-  #         kustomize build . > /tmp/de-ai-16.yaml
-  #         test -s /tmp/de-ai-16.yaml
+          kustomize build . > /tmp/de-ai-16.yaml
+          test -s /tmp/de-ai-16.yaml
 
-  #     - name: Commit and push CD change
-  #       working-directory: tf-k8s-cd
-  #       run: |
-  #         set -euo pipefail
+      - name: Commit and push CD change
+        working-directory: tf-k8s-cd
+        run: |
+          set -euo pipefail
 
-  #         git config user.name "github-actions[bot]"
-  #         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-  #         git add k8s/overlays/dev/kustomization.yaml
+          git add k8s/overlays/dev/kustomization.yaml
 
-  #         if git diff --cached --quiet; then
-  #           echo "CD Manifest에 변경 사항이 없습니다."
-  #           exit 0
-  #         fi
+          if git diff --cached --quiet; then
+            echo "CD Manifest에 변경 사항이 없습니다."
+            exit 0
+          fi
 
-  #         git commit -m "deploy(dev): ${GITHUB_SHA::12}"
-  #         git push origin main
+          git commit -m "deploy(dev): ${GITHUB_SHA::12}"
+          git push origin main
 
-  #     - name: Write CD summary
-  #       run: |
-  #         {
-  #           echo "## CD 저장소 갱신 완료"
-  #           echo
-  #           echo "- CD repository: \`${{ vars.CD_REPOSITORY }}\`"
-  #           echo "- Image tag: \`${GITHUB_SHA::12}\`"
-  #           echo "- Argo CD가 main Branch 변경을 감지해 자동 배포합니다."
-  #         } >> "${GITHUB_STEP_SUMMARY}"
+      - name: Write CD summary
+        run: |
+          {
+            echo "## CD 저장소 갱신 완료"
+            echo
+            echo "- CD repository: \`${{ vars.CD_REPOSITORY }}\`"
+            echo "- Image tag: \`${GITHUB_SHA::12}\`"
+            echo "- Argo CD가 main Branch 변경을 감지해 자동 배포합니다."
+          } >> "${GITHUB_STEP_SUMMARY}"
 
