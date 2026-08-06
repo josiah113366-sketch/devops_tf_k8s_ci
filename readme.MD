@@ -14,14 +14,16 @@
             ▼
         GitHub Actions
             │
-            ├─ Terraform fmt / validate / apply # 인프라 구성/변경 사항 반영
-            ├─ WEB Docker 이미지 빌드
+            ├─ Terraform fmt / validate / apply   # 인프라 구성/변경 사항 반영
+            ├─ WEB Docker 이미지 빌드               # web, was 이미지 생성 병렬 구성 
             ├─ WEB /health 테스트
             ├─ WAS Python 문법 검사
             ├─ WAS Docker 이미지 빌드
             ├─ WAS /health 테스트
-            ├─ GitHub OIDC로 AWS 임시 인증
-            ├─ WEB 이미지 ECR Push
+            ├─ GitHub OIDC로 AWS 임시 인증          # pem 사용, OIDC 임시 인증서로 발급받아서 로그인
+            ├─ WEB 이미지 ECR Push                 # 이미지 푸시 -> 태그 수정(해시값, commit id 등) -> CD 작동의 근거가 됨 
             ├─ WAS 이미지 ECR Push
             └─ ECR 이미지 등록 확인
 ```
+
+- devops_tf_k8s_ci는 CI/CD 구성에서 `CI 영역만 담당하는 소스 저장소(source repository)`임
