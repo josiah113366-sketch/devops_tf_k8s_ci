@@ -19,7 +19,7 @@ if not defined GITOPS_REPO_DIR (
 set "K8S_SOURCE_DIR=%GITOPS_REPO_DIR%\k8s"
 set "SOURCE_KUSTOMIZATION=%K8S_SOURCE_DIR%\overlays\dev\kustomization.yaml"
 
-if not defined APP_NAMESPACE set "APP_NAMESPACE=de-ai-25"
+if not defined APP_NAMESPACE set "APP_NAMESPACE=de-ai-16"
 if not defined IMAGE_TAG set "IMAGE_TAG=k8s-auto"
 
 call :require_command terraform

@@ -51,7 +51,7 @@ data "aws_iam_policy_document" "github_actions_ci_assume" {
 
     # AWS서비스가 아니라 외부 인증기관을 신뢰
     principals {
-      type = "Federated"
+      type        = "Federated"
       identifiers = [local.github_actions_oidc_provider_arn]
     }
     # 조건 : 다른 서비스용 토큰 발급 거부
@@ -64,7 +64,7 @@ data "aws_iam_policy_document" "github_actions_ci_assume" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values = [local.github_actions_ci_subject]
+      values   = [local.github_actions_ci_subject]
     }
   }
 }
@@ -76,13 +76,13 @@ data "aws_iam_policy_document" "github_actions_ci_assume" {
 resource "aws_iam_role" "github_actions_ci" {
   count = var.enable_github_actions_ci ? 1 : 0
 
-  name = "${local.cluster_name}-github-actions-ci-role"
+  name        = "${local.cluster_name}-github-actions-ci-role"
   description = "GitHub Actions CI role for ECR image push"
   # 앞서 만든 신뢰정책(인증서 발급처 신뢰, 특정소유주의 저장소/브런치만 작동)을 본 IAM Role에 연결
   assume_role_policy = data.aws_iam_policy_document.github_actions_ci_assume[0].json
   # 최대시간 role이 유지되는 3600초 => 1시간
   max_session_duration = 3600
-  depends_on = [aws_iam_openid_connect_provider.github_actions]
+  depends_on           = [aws_iam_openid_connect_provider.github_actions]
 }
 
 data "aws_iam_policy_document" "github_actions_ci" {
@@ -104,19 +104,19 @@ data "aws_iam_policy_document" "github_actions_ci" {
     sid    = "PushApplicationImages"
     effect = "Allow"
     actions = [
-      "ecr:BatchCheckLayerAvailability",   # 동일  이미지 레이어가 이미 있는지 체크
-      "ecr:BatchGetImage",                 # 기존 이미지 조회
-      "ecr:CompleteLayerUpload",           # 이미지 업로드 완료
-      "ecr:DescribeImages",                # 등록된 이미지, 태그 조회
-      "ecr:GetDownloadUrlForLayer",        # 이미지 다운로드 주소 조회
-      "ecr:InitiateLayerUpload",           # 이미지 업로드 시작
-      "ecr:PutImage",                      # 이미지 매니페스트, 테그 등록
-      "ecr:UploadLayerPart"                # 이미지 부분 단위로 업로드
+      "ecr:BatchCheckLayerAvailability", # 동일  이미지 레이어가 이미 있는지 체크
+      "ecr:BatchGetImage",               # 기존 이미지 조회
+      "ecr:CompleteLayerUpload",         # 이미지 업로드 완료
+      "ecr:DescribeImages",              # 등록된 이미지, 태그 조회
+      "ecr:GetDownloadUrlForLayer",      # 이미지 다운로드 주소 조회
+      "ecr:InitiateLayerUpload",         # 이미지 업로드 시작
+      "ecr:PutImage",                    # 이미지 매니페스트, 테그 등록
+      "ecr:UploadLayerPart"              # 이미지 부분 단위로 업로드
     ]
     # 위의 권한이 허가되는 이미지를 web, was용으로 제한
     resources = [
-      aws_ecr_repository.web.arn,          # web arn
-      aws_ecr_repository.was.arn           # was arn
+      aws_ecr_repository.web.arn, # web arn
+      aws_ecr_repository.was.arn  # was arn
     ]
   }
 }

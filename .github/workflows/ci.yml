@@ -2,14 +2,14 @@ name: Application CI
 
 on:
   pull_request:
-    branches: [ci-dev]
+    branches: [main]
     paths:
       - "apps/**"
       - "infra/**"
       - "scripts/ci/**"
       - ".github/workflows/ci.yml"
   push:
-    branches: [ci-dev]
+    branches: [main]
     paths:
       - "apps/**"
       - "infra/**"
